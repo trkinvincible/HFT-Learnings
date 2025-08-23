@@ -135,14 +135,14 @@ std::string IO_URING_Test()
     auto* cq_tail = (uint32_t*)((char*)cq_ptr + params.cq_off.tail);
     auto* cqes = (io_uring_cqe*)((char*)cq_ptr + params.cq_off.cqes);
 
-    while (*cq_head == *cq_tail); // spin wait
+    while (*cq_head == *cq_tail) {}    // spin wait
 
     io_uring_cqe cqe = cqes[*cq_head % QUEUE_DEPTH];
     std::string ret{};
     if ((int)cqe.res < 0) {
         std::cerr << "recvmsg failed: " << strerror(-cqe.res) << "\n";
     } else {
-        std::cout << "Received " << cqe.res << " bytes: " << std::string(buffer, cqe.res) << "\n";
+        //std::cout << "Received " << cqe.res << " bytes: " << std::string(buffer, cqe.res) << "\n";
         ret = std::string(buffer, cqe.res);
     }
 
