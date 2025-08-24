@@ -6,6 +6,7 @@
 
 #include "io_uring_test.h"
 #include "dpdk-tbt-handler.h"
+#include "mtcp-ordergateway-handler.h"
 
 TEST_CASE("IO_URING")
 {
@@ -47,6 +48,7 @@ TEST_CASE("DPDK_TBT")
         //bind it to the kernel network interface veth0.
 
         std::this_thread::sleep_for(3s);
+        // system("sudo ./dpdk-script.sh");
         system("cat ticker_packet.bin | socat -u - UDP-DATAGRAM:239.255.0.1:12345,ip-multicast-if=10.0.0.2");
     }};
     t.detach();
@@ -60,4 +62,31 @@ TEST_CASE("DPDK_TBT")
     port_id 1 → net_af_packet1 (bound to veth1)
      */
     REQUIRE(DPDK_TBT_Test(/*"7a:e3:16:0f:41:69"*/"3e:a4:7f:02:54:af", 0)=="Tick: instr=2 price=20.8 qty=20 ts_ns=0");
+}
+
+TEST_CASE("MTCP_OG_TEST")
+{
+    // netmap is no more compatible with later linux kernel 6+ for virtio and not experimenting dpdk either
+    // So i am falling back to psio default mode for mTCP.
+    /*
+    *   sudo apt install linux-headers-$(uname -r) build-essential
+        git clone https://github.com/luigirizzo/netmap.git
+        cd netmap
+        ./configure --kernel-sources=/lib/modules/$(uname -r)/build --no-drivers=virtio_net.c
+        make -j$(nproc)
+        sudo make install
+
+        Load the module:
+        sudo modprobe netmap
+     */
+    using namespace std::chrono_literals;
+    std::thread t{[](){
+        std::this_thread::sleep_for(3s);
+        // running a localhost server at port 9000 to which mTCP will write the data to. incoming data will be written to a output.dat file
+        // for inspection
+        system("socat TCP-LISTEN:9000,bind=localhost,fork open:output.dat,creat");
+    }};
+    t.detach();
+    MTCP_OG_TEST();
+    // REQUIRE(output.dat);
 }
