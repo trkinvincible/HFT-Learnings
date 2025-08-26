@@ -1,7 +1,6 @@
 #pragma once
 
 /*
- * tick_to_trade_dpdk_mtcp.cpp
  * Minimal example of multicast market data receiver (4KB datagrams)
  * using DPDK for kernel bypass and mTCP for TCP control plane.
  * Optimized with rte_memcpy for high-throughput TickerData processing.
