@@ -1,5 +1,5 @@
 /*
-        Design notes mapping to your requirements
+        Design notes
 
         Deterministic latency
 
