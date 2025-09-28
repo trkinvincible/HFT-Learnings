@@ -3,12 +3,16 @@
 
 #include <thread>
 #include <chrono>
+#include <print>
 
-#include "io_uring_test.h"
+#include "io_uring_test_no_zero_copy.h"
+#include "io_uring_test_zero_copy.h"
 #include "dpdk-tbt-handler.h"
+#if 0 // mTCP no supported in ubuntu noble
 #include "mtcp-ordergateway-handler.h"
+#endif
 
-TEST_CASE("IO_URING")
+TEST_CASE("IO_URING_Test_NO_ZERO_COPY")
 {
     // sudo ip link set lo multicast on
     using namespace std::chrono_literals;
@@ -18,7 +22,31 @@ TEST_CASE("IO_URING")
         system("echo \"hello\" | socat -v - UDP-DATAGRAM:239.255.0.1:12345,sp=54321,bind=127.0.0.1");
     }};
     t.detach();
-    REQUIRE(IO_URING_Test()=="hello\n");
+    REQUIRE(IO_URING_Test_NO_ZERO_COPY()=="hello\n");
+}
+
+TEST_CASE("IO_URING_Test_ZERO_COPY")
+{
+    // sudo ip link set lo multicast on
+    using namespace std::chrono_literals;
+    std::thread t{[](){
+        //system("sudo ip link set lo multicast on");
+        std::this_thread::sleep_for(3s);
+        auto func = []<std::size_t... I>(std::index_sequence<I...> indx)
+        {
+            auto helper = [](int index)
+            {
+                std::stringstream ss;
+                std::print(ss, "echo \"Call: {0} \" | socat -v - UDP-DATAGRAM:239.255.0.1:12345,sp=54321,bind=127.0.0.1", index);
+                system(ss.str().c_str());
+            };
+            ((helper(I)), ...);
+        };
+        func(std::make_index_sequence<1>{});
+    }};
+    t.join();
+    // std::this_thread::sleep_for(4s);
+    REQUIRE(IO_URING_Test_ZERO_COPY()=="hello\n");
 }
 
 TEST_CASE("DPDK_TBT")
@@ -64,6 +92,7 @@ TEST_CASE("DPDK_TBT")
     REQUIRE(DPDK_TBT_Test(/*"7a:e3:16:0f:41:69"*/"3e:a4:7f:02:54:af", 0)=="Tick: instr=2 price=20.8 qty=20 ts_ns=0");
 }
 
+#if 0
 TEST_CASE("MTCP_OG_TEST")
 {
     // netmap is no more compatible with later linux kernel 6+ for virtio and not experimenting dpdk either
@@ -90,3 +119,4 @@ TEST_CASE("MTCP_OG_TEST")
     MTCP_OG_TEST();
     // REQUIRE(output.dat);
 }
+#endif

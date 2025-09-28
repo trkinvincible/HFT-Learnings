@@ -60,6 +60,7 @@
 #include <numa.h>
 #include <numaif.h>
 
+
 // ---------- cacheline helpers ----------
 #ifndef CACHELINE_SIZE
 #define CACHELINE_SIZE 64
@@ -102,6 +103,7 @@ public:
             echo 2048 | sudo tee /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
             sudo mount -t hugetlbfs nodev /mnt/C406655E0665528A/Code-Factory/MINE/QtCreator-Projects/practice/hft-programs/huge/
          */
+        sched_setscheduler(SCHED_FIFO)
         void* p = mmap(nullptr, size_,
                        PROT_READ | PROT_WRITE,
                        MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB,

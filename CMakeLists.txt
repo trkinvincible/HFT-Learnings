@@ -30,7 +30,8 @@ SET(_SOURCES_
 )
 
 SET(_HEADER_
-    ${CMAKE_CURRENT_SOURCE_DIR}/hdr/io_uring_test.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hdr/io_uring_test_no_zero_copy.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/hdr/io_uring_test_zero_copy.h
     ${CMAKE_CURRENT_SOURCE_DIR}/hdr/dpdk-tbt-handler.h
 )
 
@@ -82,6 +83,7 @@ target_link_libraries(${PROJECT_NAME}
         ${DPDK_LIBRARIES}
         LLVMSupport
         Catch2::Catch2WithMain
+        -luring
 )
 
 # Enable test discovery with CTest
